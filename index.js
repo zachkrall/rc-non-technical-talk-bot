@@ -23,9 +23,15 @@ const config = {
   realm: process.env.ZULIP_REALM
 };
 
+// const params = {
+//   to: '397 Bridge',
+//   type: 'stream',
+//   subject: 'non-technical talks'
+// };
+
 const params = {
-  to: '397 Bridge',
-  type: 'stream',
+  to: 'zach@zachkrall.com',
+  type: 'private',
   subject: 'non-technical talks'
 };
 
@@ -35,8 +41,11 @@ const user = {
 };
 
 // Set up nice calendar variables
-const weekday  = moment().format('dddd');
-const today    = moment().format("YYYYMMDD").toString();
+// const weekday  = moment().format('dddd');
+// const today    = moment().format("YYYYMMDD").toString();
+const weekday = "Tuesday";
+const today = "20190709";
+
 const tomorrow = moment(today)
                  .add(1, 'days')
                  .format("YYYYMMDD")
@@ -44,71 +53,59 @@ const tomorrow = moment(today)
 
 const time = "T173000";
 
-// wrapped all inside the same get request 😰
-axios
-.get(process.env.RECURSE_CALENDAR)
-.then( (res)=>{
+(async () => {
 
-  let data = ical2json.convert(res.data)["VCALENDAR"][0]["VEVENT"];
+  var res = await axios.get(process.env.RECURSE_CALENDAR);
+  let events = ical2json.convert(res.data)["VCALENDAR"][0]["VEVENT"];
 
-  if ( weekday === "Monday" ){
+  if (weekday === "Monday") {
 
-    let event_data;
     let nice_date = "tomorrow, " + moment(tomorrow).format("dddd, MMMM Do") + ",";
 
-    for( let i=0; i<data.length; i++ ){
-      // If there is an event scheduled for tomorrow
-      // (Because this script runs every day and events run twice
-      // a week, this may not always be true )
-      if (
-        data[i]['DTSTART;TZID=America/New_York'] === tomorrow+time
-        && data[i]["SUMMARY"] === "Non-technical Talks"
-      ){
-        event_data = data[i];
-      }
-    }
+    // If there is an event scheduled for tomorrow
+    // (Because this script runs every day and events run twice
+    // a week, this may not always be true )
+    const myEvent = events.filter(currentEvent => {
 
-    zulip(config).then((client) => {
-      client.messages.send({
-            to: params.to,
-            type: params.type,
-            subject: params.subject,
-            content: long_message(nice_date, event_data["URL"])
-      })
-    }).then(console.log);
+      const isMatchingTime = currentEvent['DTSTART;TZID=America/New_York'] === tomorrow+time;
+      const isCorrectTitle = currentEvent["SUMMARY"] === "Non-technical Talks";
 
-  } else if ( weekday === "Tuesday" ) {
+      return isMatchingTime && isCorrectTitle;
+    });
 
-    let event_data;
+    const client = await zulip(config);
 
-    for( let i=0; i<data.length; i++ ){
-      // If there is an event scheduled for today
-      if (
-        data[i]['DTSTART;TZID=America/New_York'] === today+time
-        && data[i]["SUMMARY"] === "Non-technical Talks"
-      ){
-          event_data = data[i];
-      }
-    }
-
-    zulip(config).then((client) => {
-      client.messages.send({
-            to: params.to,
-            type: params.type,
-            subject: params.subject,
-            content: short_message("Today", event_data["URL"])
-      })
-    }).then(console.log);
-
-  } else {
-
-    console.log("Today is not a day I am suppose to be awake for.");
-    process.exit();
-
+    return client.messages.send({
+      to: params.to,
+      type: params.type,
+      subject: params.subject,
+      content: long_message(nice_date, myEvent["URL"])
+    });
   }
 
-});
+  if (weekday === "Tuesday") {
 
+    const myEvent = events.filter(currentEvent => {
+
+      const isToday = currentEvent['DTSTART;TZID=America/New_York'];
+      const isCorrectTitle = currentEvent["SUMMARY"] === "Non-technical Talks";
+
+      return isToday && isCorrectTitle;
+    });
+
+    const client = await zulip(config);
+
+    return client.messages.send({
+      to: params.to,
+      type: params.type,
+      subject: params.subject,
+      content: short_message("Today", myEvent["URL"])
+    });
+  }
+
+  console.log("Today is not a day I am suppose to be awake for.");
+  process.exit();
+})();
 
 function long_message (date, rsvp_link) {
 
