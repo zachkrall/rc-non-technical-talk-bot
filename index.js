@@ -23,17 +23,17 @@ const config = {
   realm: process.env.ZULIP_REALM
 };
 
-// const params = {
-//   to: '397 Bridge',
-//   type: 'stream',
-//   subject: 'non-technical talks'
-// };
-
 const params = {
-  to: 'zach@zachkrall.com',
-  type: 'private',
+  to: '397 Bridge',
+  type: 'stream',
   subject: 'non-technical talks'
 };
+
+// const params = {
+//   to: 'zach@zachkrall.com',
+//   type: 'private',
+//   subject: 'non-technical talks'
+// };
 
 const user = {
   host: `@**Zach Krall (he) (S1'19)**`,
@@ -111,18 +111,17 @@ function long_message (date, rsvp_link) {
 
   return `Hello, friends! Non-technical talks are happening ${date} at 5:30 pm in the presentation space!
 
-Interested in coming? [RSVP to the calendar event](${rsvp_link})!
-Wanna give a talk? [Sign up here](${process.env.GOOGLE_SHEET})!
-
-**What are Non-technical talks?**
-Non-technical talks happen twice a month at RC. They are an opportunity to share what you are passionate or excited about with your fellow Recursers!
+:calendar: Interested in coming? [RSVP to the calendar event](${rsvp_link})!
+:speech_balloon: Wanna give a talk? [Sign up here](${process.env.GOOGLE_SHEET})!
 
 **What are Non-Technical Talks?**
 Non-technical Talks are a great way to share your hobbies, interests, recent discoveries, etc with fellow Recusers while also practicing your public speaking skills.
 If you feel like your topic is borderline technical, we'd like to encourage you to give that talk anyway.
 
 **How to Prepare**
-Talks can be up to 7-10 minutes long (depending on the number of speakers), followed by a few optional minutes of Q&A. Slides are not required, you can present however you feel the most comfortable!
+:clock: Talks can be up to 7-10 minutes long (depending on the number of speakers)
+:raising_hand: You can have an optional Q&A of around 2 minutes
+:laptop: Slides are not required, you can present however you feel the most comfortable!
 
 *\`~☆.*。*~.・★
 
@@ -136,8 +135,8 @@ function short_message (date, rsvp_link) {
 
   return `Hello! Just a reminder that Non-technical talks are happening ${date} at 5:30 pm in the presentation space!
 
-Interested in coming? [RSVP to the calendar event](${rsvp_link})!
-Wanna give a talk? [Sign up here](${process.env.GOOGLE_SHEET})!
+:calendar: Interested in coming? [RSVP to the calendar event](${rsvp_link})!
+:speech_balloon: Wanna give a talk? [Sign up here](${process.env.GOOGLE_SHEET})!
 
 If you have questions or a looking for feedback regarding a talk idea, you can contact ${user.host}! Looking forward to seeing you soon! Beep boop!`;
 
