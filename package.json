@@ -1,0 +1,22 @@
+{
+  "name": "rc-non-tech-talk-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Zach Krall <zach@zachkrall.com>",
+  "license": "Imagine License",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "ical2json": "^1.2.0",
+    "moment": "^2.24.0",
+    "zulip-js": "^2.0.6"
+  },
+  "devDependencies": {
+    "dotenv": "^8.0.0"
+  }
+}
