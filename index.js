@@ -24,8 +24,8 @@ const config = {
 };
 
 const params = {
-  to: 'zach@zachkrall.com',
-  type: 'private',
+  to: '397 Bridge',
+  type: 'stream',
   subject: 'non-technical talks'
 };
 
@@ -35,12 +35,12 @@ const user = {
 };
 
 // Set up nice calendar variables
-const weekday = moment().format('dddd');
-const today = moment().format("YYYYMMDD").toString();
+const weekday  = moment().format('dddd');
+const today    = moment().format("YYYYMMDD").toString();
 const tomorrow = moment(today)
-               .add(1, 'days')
-               .format("YYYYMMDD")
-               .toString();
+                 .add(1, 'days')
+                 .format("YYYYMMDD")
+                 .toString();
 
 const time = "T173000";
 
