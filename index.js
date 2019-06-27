@@ -41,10 +41,10 @@ const user = {
 };
 
 // Set up nice calendar variables
-// const weekday  = moment().format('dddd');
-// const today    = moment().format("YYYYMMDD").toString();
-const weekday = "Tuesday";
-const today = "20190709";
+const weekday  = moment().format('dddd');
+const today    = moment().format("YYYYMMDD").toString();
+// const weekday = "Tuesday";
+// const today = "20190709";
 
 const tomorrow = moment(today)
                  .add(1, 'days')
