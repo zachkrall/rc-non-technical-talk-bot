@@ -1,110 +1,135 @@
 const axios = require('axios');
 const ical2json = require('ical2json');
 const moment = require('moment');
-const path = require('path');
 const zulip = require('zulip-js');
 
-// YIKES! This is kind of messy right now.
-
-// TO DO:
-// [ ] only call axios get request when data is needed
-// [ ] create tests?
-// [ ] async / await
-// [ ] put message generation into a module?
-
-
+// Import Environment Variables
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
 
+// Zulip API Config Settings
 const config = {
   username: process.env.ZULIP_USERNAME,
   apiKey: process.env.ZULIP_API_KEY,
   realm: process.env.ZULIP_REALM
 };
 
+// Posting to stream settings
 const params = {
   to: '397 Bridge',
   type: 'stream',
   subject: 'non-technical talks'
 };
 
-// const params = {
-//   to: 'zach@zachkrall.com',
-//   type: 'private',
-//   subject: 'non-technical talks'
-// };
-
+// Pull username formatting for tagging in Zulip
 const user = {
   host: `@**Zach Krall (he) (S1'19)**`,
+  host_email: 'zach@zachkrall.com',
   all: `@*Currently at RC*`
 };
 
 // Set up nice calendar variables
-const weekday  = moment().format('dddd');
-const today    = moment().format("YYYYMMDD").toString();
-// const weekday = "Tuesday";
-// const today = "20190709";
-
+const today    = moment()
+                 .format("YYYYMMDD")
+                 .toString();
+const weekday  = moment(today)
+                 .format('dddd');
 const tomorrow = moment(today)
                  .add(1, 'days')
                  .format("YYYYMMDD")
                  .toString();
+const time     = "T173000"; // this is some crazy time formatting thing
+const timezone = "DTSTART;TZID=America/New_York";
 
-const time = "T173000";
 
 (async () => {
 
-  var res = await axios.get(process.env.RECURSE_CALENDAR);
+  let res = await axios.get(process.env.RECURSE_CALENDAR);
   let events = ical2json.convert(res.data)["VCALENDAR"][0]["VEVENT"];
 
   if (weekday === "Monday") {
 
-    let nice_date = "tomorrow, " + moment(tomorrow).format("dddd, MMMM Do") + ",";
+    // Gramatically correct date formatting for message string
+    let date = "tomorrow, " + moment(tomorrow).format("dddd, MMMM Do") + ",";
 
-    // If there is an event scheduled for tomorrow
-    // (Because this script runs every day and events run twice
-    // a week, this may not always be true )
-    const myEvent = events.filter(currentEvent => {
+    const cal = events.filter(e => {
 
-      const isMatchingTime = currentEvent['DTSTART;TZID=America/New_York'] === tomorrow+time;
-      const isCorrectTitle = currentEvent["SUMMARY"] === "Non-technical Talks";
+      // Parameters that return TRUE/FALSE
+      const matchTime  = e[timezone] === tomorrow+time;
+      const matchTitle = e["SUMMARY"] === "Non-technical Talks";
 
-      return isMatchingTime && isCorrectTitle;
+      // if date of event is tomorrow
+      // and title matches Non-Technical Talks
+      // then we can keep this object
+      // otherwise, remove it from array
+      return matchTime && matchTitle;
+
     });
 
     const client = await zulip(config);
 
-    return client.messages.send({
-      to: params.to,
-      type: params.type,
-      subject: params.subject,
-      content: long_message(nice_date, myEvent["URL"])
-    });
+    if( cal.length == 1 ){
+      // we only want to post a message to Zulip
+      // if there is an event inside myEvent ...
+
+      // if multiple events are found ... that's
+      // a problem and we shouldn't run the bot
+      return client.messages.send({
+        to: params.to,
+        type: params.type,
+        subject: params.subject,
+        content: long_message(date, cal[0]["URL"])
+      });
+
+    } else if ( cal.length > 1 ){
+      // Send event host an email if this doesn't run correctly.
+      return client.messages.send({
+        to: user.host_email,
+        type: 'private',
+        subject: 'Non-Technical Talk Bot',
+        content: 'Error: More than one event found!'
+      });
+    }
+
+  } else if (weekday === "Tuesday") {
+
+      const cal = events.filter(e => {
+
+        // same as above
+        const matchTime  = e[timezone] === today+time;
+        const matchTitle = e["SUMMARY"] === "Non-technical Talks";
+        return matchTime && matchTitle;
+
+      });
+
+      const client = await zulip(config);
+
+      if( cal.length == 1 ){
+
+        return client.messages.send({
+          to: params.to,
+          type: params.type,
+          subject: params.subject,
+          content: short_message("Today", cal[0]["URL"])
+        });
+
+      } else if ( cal.length > 1 ){
+
+        return client.messages.send({
+          to: user.host_email,
+          type: 'private',
+          subject: 'Non-Technical Talk Bot',
+          content: 'Error: More than one event found!'
+        });
+      }
+
   }
 
-  if (weekday === "Tuesday") {
-
-    const myEvent = events.filter(currentEvent => {
-
-      const isToday = currentEvent['DTSTART;TZID=America/New_York'];
-      const isCorrectTitle = currentEvent["SUMMARY"] === "Non-technical Talks";
-
-      return isToday && isCorrectTitle;
-    });
-
-    const client = await zulip(config);
-
-    return client.messages.send({
-      to: params.to,
-      type: params.type,
-      subject: params.subject,
-      content: short_message("Today", myEvent["URL"])
-    });
-  }
-
-  console.log("Today is not a day I am suppose to be awake for.");
+  // This should only run if nothing matches above
+  return console.log('No matching events found...');
   process.exit();
+
 })();
 
 function long_message (date, rsvp_link) {
