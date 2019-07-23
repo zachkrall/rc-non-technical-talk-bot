@@ -16,11 +16,11 @@ const config = {
 };
 
 // Posting to stream settings
-const params = {
-  to: '397 Bridge',
-  type: 'stream',
-  subject: 'non-technical talks'
-};
+// const params = {
+//   to: '397 Bridge',
+//   type: 'stream',
+//   subject: 'non-technical talks'
+// };
 
 // Pull username formatting for tagging in Zulip
 const user = {
@@ -150,7 +150,7 @@ If you feel like your topic is borderline technical, we'd like to encourage you 
 
 *\`~☆.*。*~.・★
 
-If you have questions or a looking for feedback regarding a talk idea, you can contact ${user.host}! (Please, don't contact me directly... I'm shy) Looking forward to seeing you soon! Beep boop!
+If you have questions or are looking for feedback regarding a talk idea, you can contact ${user.host}! (Please, don't contact me directly... I'm shy) Looking forward to seeing you soon! Beep boop!
 
 ${user.all}`;
 
@@ -163,6 +163,6 @@ function short_message (date, rsvp_link) {
 :calendar: Interested in coming? [RSVP to the calendar event](${rsvp_link})!
 :speech_balloon: Wanna give a talk? [Sign up here](${process.env.GOOGLE_SHEET})!
 
-If you have questions or a looking for feedback regarding a talk idea, you can contact ${user.host}! Looking forward to seeing you soon! Beep boop!`;
+If you have questions or are looking for feedback regarding a talk idea, you can contact ${user.host}! Looking forward to seeing you soon! Beep boop!`;
 
 }
