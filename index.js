@@ -16,16 +16,16 @@ const config = {
 };
 
 // Posting to stream settings
-// const params = {
-//   to: '397 Bridge',
-//   type: 'stream',
-//   subject: 'non-technical talks'
-// };
+const params = {
+  to: '397 Bridge',
+  type: 'stream',
+  subject: 'non-technical talks'
+};
 
 // Pull username formatting for tagging in Zulip
 const user = {
-  host: `@**Zach Krall (he) (S1'19)**`,
-  host_email: 'zach@zachkrall.com',
+  host: `@**Kathleen McGuire (she/they) (S2'19)** @**Changlin Li (he) (S2'19)**`,
+  host_email: 'kathleen.macg@gmail.com',
   all: `@*Currently at RC*`
 };
 
@@ -57,7 +57,7 @@ const timezone = "DTSTART;TZID=America/New_York";
 
       // Parameters that return TRUE/FALSE
       const matchTime  = e[timezone] === tomorrow+time;
-      const matchTitle = e["SUMMARY"] === "Non-technical Talks";
+      const matchTitle = e["SUMMARY"] === "Non-Technical Talks";
 
       // if date of event is tomorrow
       // and title matches Non-Technical Talks
@@ -98,7 +98,7 @@ const timezone = "DTSTART;TZID=America/New_York";
 
         // same as above
         const matchTime  = e[timezone] === today+time;
-        const matchTitle = e["SUMMARY"] === "Non-technical Talks";
+	const matchTitle = e["SUMMARY"] === "Non-Technical Talks";
         return matchTime && matchTitle;
 
       });
