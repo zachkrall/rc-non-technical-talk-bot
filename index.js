@@ -1,12 +1,25 @@
-const axios = require('axios');
+const axios     = require('axios');
 const ical2json = require('ical2json');
-const moment = require('moment');
-const zulip = require('zulip-js');
+const moment    = require('moment');
+const zulip     = require('zulip-js');
+const process   = require('process');
+
+let debug = false;
 
 // Import Environment Variables
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
+  debug = true;
 }
+
+const testDate = process.argv[2] || '20190819';
+
+// Import user settings from .env
+const user = {
+  host: process.env.HOST,
+  host_email: process.env.HOST_EMAIL,
+  all: `@*Currently at RC*`i
+};
 
 // Zulip API Config Settings
 const config = {
@@ -15,22 +28,28 @@ const config = {
   realm: process.env.ZULIP_REALM
 };
 
-// Posting to stream settings
-const params = {
+// Parameters for posting to zulip stream
+// if in development mode, then send
+// private messages instead of posting
+// to stream
+const params = debug ? {
+  to: user.host_email,
+  type: 'private',
+  subject 'non-technical talks'
+} : {
   to: '397 Bridge',
   type: 'stream',
   subject: 'non-technical talks'
 };
 
-// Pull username formatting for tagging in Zulip
-const user = {
-  host: `@**Kathleen McGuire (she/they) (S2'19)** @**Changlin Li (he) (S2'19)**`,
-  host_email: 'kathleen.macg@gmail.com',
-  all: `@*Currently at RC*`
-};
-
 // Set up nice calendar variables
-const today    = moment()
+//  - If development, use a test date
+//  - If production, use today's date
+const today    = (
+                   debug
+                   ? moment(testDate)
+                   : moment()
+                 )
                  .format("YYYYMMDD")
                  .toString();
 const weekday  = moment(today)
@@ -39,13 +58,14 @@ const tomorrow = moment(today)
                  .add(1, 'days')
                  .format("YYYYMMDD")
                  .toString();
-const time     = "T173000"; // this is some crazy time formatting thing
+// Calendar specific time formats
+const time     = "T173000";
 const timezone = "DTSTART;TZID=America/New_York";
 
 
 (async () => {
 
-  let res = await axios.get(process.env.RECURSE_CALENDAR);
+  let res    = await axios.get(process.env.RECURSE_CALENDAR);
   let events = ical2json.convert(res.data)["VCALENDAR"][0]["VEVENT"];
 
   if (weekday === "Monday") {
@@ -55,9 +75,14 @@ const timezone = "DTSTART;TZID=America/New_York";
 
     const cal = events.filter(e => {
 
+      // If event does not exist, end
+      if( !e["SUMMARY"] ){
+        return false
+      }
+
       // Parameters that return TRUE/FALSE
       const matchTime  = e[timezone] === tomorrow+time;
-      const matchTitle = e["SUMMARY"] === "Non-Technical Talks";
+      const matchTitle = e["SUMMARY"].toLowerCase() === "non-technical talks";
 
       // if date of event is tomorrow
       // and title matches Non-Technical Talks
@@ -96,9 +121,13 @@ const timezone = "DTSTART;TZID=America/New_York";
 
       const cal = events.filter(e => {
 
+        if( !e["SUMMARY"] ){
+          return false;
+        }
+
         // same as above
         const matchTime  = e[timezone] === today+time;
-	const matchTitle = e["SUMMARY"] === "Non-Technical Talks";
+	      const matchTitle = e["SUMMARY"].toLowerCase() === "non-technical talks";
         return matchTime && matchTitle;
 
       });
