@@ -11,7 +11,7 @@
   "author": "Zach Krall <zach@zachkrall.com>",
   "license": "Imagine License",
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "ical2json": "^1.2.0",
     "moment": "^2.29.4",
     "zulip-js": "^2.0.6"
